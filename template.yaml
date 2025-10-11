@@ -63,7 +63,18 @@ spec:
                   const: Github pages
                 extraFields:
                   type: object
-                  properties: {}
+                  properties: 
+                    Github:
+                      title: Enter the Path of Github Url
+                      type: string
+                      description: Enter the Github URL 
+                      
+                      
+                    GithubToken:
+                      title: Enter the Github Token
+                      type: string
+                      description: Enter the token
+                       
   
             - properties:
                 stack:
@@ -78,32 +89,6 @@ spec:
                 extraFields:
                   type: object
                   properties: {}
-            
-
-        
-        # Dockerfile:
-        #   title: Enter the Path of Dockerfile
-        #   type: string
-        #   description: Enter the Dockerfile path (e.g. build/Dockerfile or enter Dockerfile if it is in root) 
-        #   #ui:autofocus: true
-        # Port:
-        #   title: Enter the Port number
-        #   type: string
-        #   description: Enter the Port number of your application(e.g 80/3000/5000)
-          #ui:autofocus: true
-          
-# parameters:
-#   - title: Fill in project details
-#     required:
-#       - name
-#       - description
-#       - owner
-#     properties:
-#       name:
-#         title: Project Name
-#         type: string
-#         description: What’s the name of your project?
-#         ui:autofocus: true
           
   steps:
     - id: fetch-template
@@ -112,42 +97,47 @@ spec:
       input:
         url: ${{ parameters.Github_URL }}
         targetPath: .
-    #Previous code throug this template will appear but it will not execute
+
+    - id: github-pages
+      name: Enable GitHub Pages
+      if: ${{ parameters.stack == 'Github pages' }}
+      action: github:pages:configure
+      input:
+        repoUrl: ${{ parameters.extraFields.Github }}
+        buildType: workflow
+        sourceBranch: main
+        sourcePath: /
+        token: ${{ parameters.extraFields.GithubToken }}
+
+    
+
     # - id: build_docker
     #   name: Build Docker Image
+    #   if: ${{ parameters.stack == 'Docker' }}
     #   action: shell:run
     #   input:
-    #     workingDirectory: ${{ steps.clone.output.path }}
-    #     command: |
-    #       docker build -t my-image:latest .
-
-    - id: build_docker
-      name: Build Docker Image
-      if: ${{ parameters.stack == 'Docker' }}
-      action: shell:run
-      input:
-        cwd: ${{ steps.clone.output.path }}
-        command: docker 
-        args: ["build", "-f", "${{ parameters.extraFields.Dockerfile }}", "-t", "my-image:latest", "."]
+    #     cwd: ${{ steps.clone.output.path }}
+    #     command: docker 
+    #     args: ["build", "-f", "${{ parameters.extraFields.Dockerfile }}", "-t", "my-image:latest", "."]
 
 
-    - id: cleanup
-      name: Remove old container if exists
-      if: ${{ parameters.stack == 'Docker' }}
-      action: shell:run
-      input:
-        command: docker
-        args: ["rm", "-f", "Cafe-container"]
+    # - id: cleanup
+    #   name: Remove old container if exists
+    #   if: ${{ parameters.stack == 'Docker' }}
+    #   action: shell:run
+    #   input:
+    #     command: docker
+    #     args: ["rm", "-f", "Cafe-container"]
                 
 
-    - id: deploy_docker
-      name: Deploy Docker Container
-      if: ${{ parameters.stack == 'Docker' }}
-      action: shell:run
-      input:
-        cwd: ${{ steps.clone.output.path }}
-        command: docker
-        args: ["run", "--name", "Cafe-container", "-it", "-d", "-p", "89:${{ parameters.extraFields.Port }}", "my-image:latest"]
+    # - id: deploy_docker
+    #   name: Deploy Docker Container
+    #   if: ${{ parameters.stack == 'Docker' }}
+    #   action: shell:run
+    #   input:
+    #     cwd: ${{ steps.clone.output.path }}
+    #     command: docker
+    #     args: ["run", "--name", "Cafe-container", "-it", "-d", "-p", "89:${{ parameters.extraFields.Port }}", "my-image:latest"]
 
     # - id: run-echo
     #   name: Echo Test
@@ -159,5 +149,5 @@ spec:
   output:
     links:
       - title: "Open Website"
-        url: "http://localhost:89"
+        #url: "http://localhost:89"
         icon: "website"
