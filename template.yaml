@@ -101,7 +101,7 @@ spec:
     - id: github-pages
       name: Enable GitHub Pages
       if: ${{ parameters.stack == 'Github pages' }}
-      action: github:pages:configure
+      action: github:pages:enable
       input:
         repoUrl: ${{ parameters.extraFields.Github }}
         buildType: workflow
