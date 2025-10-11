@@ -1,0 +1,163 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: docker-deploy-from-github
+  title: Deploy Docker from GitHub Repo
+  description: Create and deploy a Docker container from a GitHub repository URL.
+spec:
+  owner: user:guest
+  type: service
+
+  
+  parameters:
+    - title: GitHub Repository URL
+      required: 
+        - Github_URL
+        #- Dockerfile
+        #- Port
+      properties:
+        Github_URL:
+          title: Enter you Github URL
+          type: string
+          description: Enter the github URL where your code exists
+          ui:autofocus: true
+
+    - title: Select where you want to deploy your code
+      required:
+        - stack
+      properties:
+        stack:
+          title: Select from below list
+          type: string
+          enum:
+            - Docker
+            - Github pages
+            - Baremetal
+            - Kubernetes
+  
+    - title: Enter below details
+      dependencies:
+        stack:
+          oneOf:
+            - properties:
+                stack:
+                  const: Docker
+                extraFields:          # 👈 wrap everything else inside a schema key
+                  title: Enter the details
+                  type: object
+                  properties:
+                    Dockerfile:
+                      title: Enter the Path of Dockerfile
+                      type: string
+                      description: Enter the Dockerfile path (e.g. build/Dockerfile or enter Dockerfile if it is in root) 
+                      default: "Dockerfile" 
+                    Port:
+                      title: Enter the Port number
+                      type: integer
+                      minimum: 1
+                      maximum: 65535
+                      description: Enter the Port number of your application (e.g. 80/3000/5000)
+  
+            - properties:
+                stack:
+                  const: Github pages
+                extraFields:
+                  type: object
+                  properties: {}
+  
+            - properties:
+                stack:
+                  const: Baremetal
+                extraFields:
+                  type: object
+                  properties: {}
+  
+            - properties:
+                stack:
+                  const: Kubernetes
+                extraFields:
+                  type: object
+                  properties: {}
+            
+
+        
+        # Dockerfile:
+        #   title: Enter the Path of Dockerfile
+        #   type: string
+        #   description: Enter the Dockerfile path (e.g. build/Dockerfile or enter Dockerfile if it is in root) 
+        #   #ui:autofocus: true
+        # Port:
+        #   title: Enter the Port number
+        #   type: string
+        #   description: Enter the Port number of your application(e.g 80/3000/5000)
+          #ui:autofocus: true
+          
+# parameters:
+#   - title: Fill in project details
+#     required:
+#       - name
+#       - description
+#       - owner
+#     properties:
+#       name:
+#         title: Project Name
+#         type: string
+#         description: What’s the name of your project?
+#         ui:autofocus: true
+          
+  steps:
+    - id: fetch-template
+      name: Fetch template files
+      action: fetch:plain
+      input:
+        url: ${{ parameters.Github_URL }}
+        targetPath: .
+    #Previous code throug this template will appear but it will not execute
+    # - id: build_docker
+    #   name: Build Docker Image
+    #   action: shell:run
+    #   input:
+    #     workingDirectory: ${{ steps.clone.output.path }}
+    #     command: |
+    #       docker build -t my-image:latest .
+
+    - id: build_docker
+      name: Build Docker Image
+      if: ${{ parameters.stack == 'Docker' }}
+      action: shell:run
+      input:
+        cwd: ${{ steps.clone.output.path }}
+        command: docker 
+        args: ["build", "-f", "${{ parameters.extraFields.Dockerfile }}", "-t", "my-image:latest", "."]
+
+
+    - id: cleanup
+      name: Remove old container if exists
+      if: ${{ parameters.stack == 'Docker' }}
+      action: shell:run
+      input:
+        command: docker
+        args: ["rm", "-f", "Cafe-container"]
+                
+
+    - id: deploy_docker
+      name: Deploy Docker Container
+      if: ${{ parameters.stack == 'Docker' }}
+      action: shell:run
+      input:
+        cwd: ${{ steps.clone.output.path }}
+        command: docker
+        args: ["run", "--name", "Cafe-container", "-it", "-d", "-p", "89:${{ parameters.extraFields.Port }}", "my-image:latest"]
+
+    # - id: run-echo
+    #   name: Echo Test
+    #   action: shell:run
+    #   input:
+    #     command: echo
+    #     args: ["Hello Backstage!"]
+
+  output:
+    links:
+      - title: "Open Website"
+        url: "http://localhost:89"
+        icon: "website"
