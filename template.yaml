@@ -103,7 +103,7 @@ spec:
       if: ${{ parameters.stack == 'Github pages' }}
       action: github:pages:enable
       input:
-        repoUrl: ${{ parameters.extraFields.Github }}
+        repoUrl: github.com?repo=Cafe-static-last&owner=Meghana-shetty
         buildType: workflow
         sourceBranch: main
         sourcePath: /
