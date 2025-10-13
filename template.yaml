@@ -91,26 +91,149 @@ spec:
                   properties: {}
           
   steps:
-    - id: fetch-template
-      name: Fetch template files
+    # - id: fetch-template
+    #   name: Fetch template files
+    #   action: fetch:plain
+    #   input:
+    #     url: ${{ parameters.Github_URL }}
+    #     targetPath: .
+
+    - id: fetch
+      name: Fetch GitHub Repo
       action: fetch:plain
       input:
         url: ${{ parameters.Github_URL }}
-        targetPath: .
+        targetPath: ./site  # fetch code into ./site folder
 
-    - id: github-pages
+    - id: build
+      name: Build Project
+      action: scaffolder:execute-shell-command
+      input:
+        workingDirectory: ./site
+        shell: bash
+        script: |
+          # Node.js
+          PACKAGE_JSON=$(find . -name package.json -print -quit)
+          if [ -n "$PACKAGE_JSON" ]; then
+            cd $(dirname "$PACKAGE_JSON")
+            npm install
+            npm run build
+            # Normalize output to ./dist
+            if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
+          elif [ -f "index.html" ]; then
+            # plain static site, just copy to ./dist
+            mkdir -p ./dist
+            cp -r ./* ./dist
+          else
+            echo "⚠️ Unknown project type; no build executed"
+
+    - id: publish
+      name: Publish to GitHub Pages
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.extraFields.Github }}  # GitHub repo URL
+        defaultBranch: gh-pages
+        sourcePath: ./site/dist  # folder containing final static site
+        protectDefaultBranch: false
+
+    - id: enable-pages
       name: Enable GitHub Pages
       if: ${{ parameters.stack == 'Github pages' }}
       action: github:pages:enable
       input:
-        repoUrl: github.com?repo=Cafe-static-last&owner=Meghana-shetty
+        repoUrl: ${{ parameters.extraFields.Github }}
         buildType: workflow
-        sourceBranch: main
+        sourceBranch: gh-pages
         sourcePath: /
         token: ${{ parameters.extraFields.GithubToken }}
 
-    
 
+
+    # - id: github-pages
+    #   name: Enable GitHub Pages
+    #   if: ${{ parameters.stack == 'Github pages' }}
+    #   action: github:pages:enable
+    #   input:
+    #     repoUrl: ${{ parameters.extraFields.Github }} # github.com?repo=Cafe-static-last&owner=Meghana-shetty
+    #     buildType: workflow
+    #     sourceBranch: main
+    #     sourcePath: /
+    #     token: ${{ parameters.extraFields.GithubToken }}
+
+
+    ##########################Adding for Github Pages##########################
+
+    # - id: fetch
+    #   name: Fetch Template
+    #   action: fetch:template
+    #   input:
+    #     url: ./template-content
+    #     targetPath: ./site
+
+    # - id: build
+    #   name: Build Static Site
+    #   action: scaffolder:execute-shell-command #execute:template
+    #   input:
+    #     #command: npm install && npm run build
+    #       shell: bash
+    #       script: |
+    #       # Search for Node.js project
+    #         PACKAGE_JSON_PATH=$(find . -name package.json -print -quit)
+    #         if [ -n "$PACKAGE_JSON_PATH" ]; then
+    #           echo "📦 Node.js project detected at $PACKAGE_JSON_PATH"
+    #           cd $(dirname "$PACKAGE_JSON_PATH")
+    #           npm install
+    #           npm run build
+            
+    #         # Search for Maven project
+    #         elif MAVEN_POM_PATH=$(find . -name pom.xml -print -quit); [ -n "$MAVEN_POM_PATH" ]; then
+    #           echo "☕ Java Maven project detected at $MAVEN_POM_PATH"
+    #           cd $(dirname "$MAVEN_POM_PATH")
+    #           mvn package
+            
+    #         # Search for Gradle project
+    #         elif GRADLE_PATH=$(find . \( -name build.gradle -o -name gradlew \) -print -quit); [ -n "$GRADLE_PATH" ]; then
+    #           echo "☕ Java Gradle project detected at $GRADLE_PATH"
+    #           cd $(dirname "$GRADLE_PATH")
+    #           ./gradlew build
+            
+    #         # Search for Python project
+    #         elif PYTHON_REQ_PATH=$(find . -name requirements.txt -print -quit); [ -n "$PYTHON_REQ_PATH" ]; then
+    #           echo "🐍 Python project detected at $PYTHON_REQ_PATH"
+    #           cd $(dirname "$PYTHON_REQ_PATH")
+    #           pip install -r requirements.txt
+    #           python manage.py collectstatic || echo "No static files to collect"
+            
+    #         # Search for plain static site
+    #         elif HTML_PATH=$(find . -name index.html -print -quit); [ -n "$HTML_PATH" ]; then
+    #           echo "🌐 Plain static site detected at $HTML_PATH (no build needed)"
+            
+    #         else
+    #           echo "⚠️ Unknown project type. No build executed."
+    #         fi
+
+    #       workingDirectory: .
+
+    # - id: publish
+    #   name: Publish to GitHub
+    #   action: publish:github
+    #   input:
+    #     repoUrl: ${{ parameters.extraFields.Github }}
+    #     defaultBranch: gh-pages
+    #     sourcePath: ./dist
+    #     protectDefaultBranch: false
+
+
+  # output:
+  #   links:
+  #     - title: Repository
+  #       url: ${{ steps.publish.output.remoteUrl }}
+  #     - title: Live GitHub Pages Site
+  #       url: ${{ steps.github-pages.output.pageUrl }}
+
+
+    
+################################################################################################################################
     # - id: build_docker
     #   name: Build Docker Image
     #   if: ${{ parameters.stack == 'Docker' }}
@@ -146,8 +269,8 @@ spec:
     #     command: echo
     #     args: ["Hello Backstage!"]
 
-  output:
-    links:
-      - title: "Open Website"
-        #url: "http://localhost:89"
-        icon: "website"
+  # output:
+  #   links:
+  #     - title: "Open Website"
+  #       #url: "http://localhost:89"
+  #       icon: "website"
