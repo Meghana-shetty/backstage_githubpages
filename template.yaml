@@ -111,40 +111,63 @@ spec:
       input:
         url: ${{ parameters.Github_URL }}
         targetPath: ./site
-    
+
     - id: build
-      name: Build Project
+      name: Prepare Static Site
       action: shell:run
       input:
         command: bash
         args:
           - -c
           - |
-            set -euo pipefail
-            echo "📁 Working directory: $(pwd)"
-            echo "🔍 Searching for project type..."
+            set -e
+            echo "🌐 Static site detected"
+            echo "📍 Working directory: $(pwd)"
+            echo "📂 Files present:"
+            ls -la
     
-            PACKAGE_JSON=$(find . -name package.json -print -quit || true)
+            # Create dist directory
+            mkdir -p ./dist
     
-            if [ -n "$PACKAGE_JSON" ]; then
-              echo "📦 Node.js project detected: $PACKAGE_JSON"
-              cd "$(dirname "$PACKAGE_JSON")"
-              npm install
-              npm run build || { echo "❌ npm build failed"; exit 1; }
-              if [ -d build ]; then
-                mv build ../dist
-              elif [ -d dist ]; then
-                mv dist ../dist
-              fi
-              echo "✅ Node.js build complete"
-            elif [ -f "index.html" ]; then
-              echo "🌐 Plain static site detected, copying to dist..."
-              mkdir -p ./dist
-              cp -r ./* ./dist
-            else
-              echo "⚠️ Unknown project type, skipping build"
-            fi
+            # Copy all static files (HTML, CSS, JS, images, etc.)
+            cp -r ./* ./dist/
+    
+            echo "✅ Static files copied to ./dist"
         cwd: ./site
+    
+    # - id: build
+    #   name: Build Project
+    #   action: shell:run
+    #   input:
+    #     command: bash
+    #     args:
+    #       - -c
+    #       - |
+    #         set -euo pipefail
+    #         echo "📁 Working directory: $(pwd)"
+    #         echo "🔍 Searching for project type..."
+    
+    #         PACKAGE_JSON=$(find . -name package.json -print -quit || true)
+    
+    #         if [ -n "$PACKAGE_JSON" ]; then
+    #           echo "📦 Node.js project detected: $PACKAGE_JSON"
+    #           cd "$(dirname "$PACKAGE_JSON")"
+    #           npm install
+    #           npm run build || { echo "❌ npm build failed"; exit 1; }
+    #           if [ -d build ]; then
+    #             mv build ../dist
+    #           elif [ -d dist ]; then
+    #             mv dist ../dist
+    #           fi
+    #           echo "✅ Node.js build complete"
+    #         elif [ -f "index.html" ]; then
+    #           echo "🌐 Plain static site detected, copying to dist..."
+    #           mkdir -p ./dist
+    #           cp -r ./* ./dist
+    #         else
+    #           echo "⚠️ Unknown project type, skipping build"
+    #         fi
+    #     cwd: ./site
     
     - id: publish
       name: Publish to GitHub Pages
