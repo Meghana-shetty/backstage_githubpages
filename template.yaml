@@ -183,7 +183,7 @@ spec:
     #     cwd: ./site
     - id: publish
       name: Publish to GitHub Pages
-      action: publish:github
+      action: publish:github:pages #publish:github
       input:
         repoUrl: github.com?owner=Meghana-shetty&repo=cafe-static-website     #${{ parameters.extraFields.Github }}   # must be full HTTPS URL
         defaultBranch: gh-pages
