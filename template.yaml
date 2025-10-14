@@ -123,13 +123,28 @@ spec:
             set -e
             echo "🌐 Static site detected"
             echo "📍 Working directory: $(pwd)"
-            echo "📂 Files present:"
-            ls -la
+            echo "📂 Files present (excluding hidden):"
+            find . -maxdepth 2 -not -path '*/.*'
     
+            echo "📦 Creating ./dist folder"
             mkdir -p ./dist
-            cp -r ./* ./dist/
-            echo "✅ Static files copied to ./dist"
+    
+            # Copy visible files from root if any
+            if [ "$(ls -A | grep -v '^\.' | wc -l)" -gt 0 ]; then
+              echo "📋 Copying files from root to ./dist..."
+              rsync -av --exclude='.*' ./ ./dist/
+            fi
+    
+            # Copy all non-hidden subfolders into dist
+            SUBFOLDERS=$(find . -mindepth 1 -maxdepth 1 -type d -not -name '.*')
+            for F in $SUBFOLDERS; do
+              echo "📂 Copying contents of $F to ./dist..."
+              rsync -av --exclude='.*' "$F"/ ./dist/
+            done
+    
+            echo "✅ All static files copied to ./dist successfully!"
         cwd: ./site
+
 
 
     
