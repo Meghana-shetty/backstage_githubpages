@@ -107,25 +107,50 @@ spec:
 
     - id: build
       name: Build Project
-      action: scaffolder:execute-shell-command
+      action: shell:run
       input:
-        workingDirectory: ./site
-        shell: bash
-        script: |
-          # Node.js
-          PACKAGE_JSON=$(find . -name package.json -print -quit)
-          if [ -n "$PACKAGE_JSON" ]; then
-            cd $(dirname "$PACKAGE_JSON")
-            npm install
-            npm run build
-            # Normalize output to ./dist
-            if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
-          elif [ -f "index.html" ]; then
-            # plain static site, just copy to ./dist
-            mkdir -p ./dist
-            cp -r ./* ./dist
-          else
-            echo "⚠️ Unknown project type; no build executed"
+        command: bash
+        args:
+          - -c
+          - |
+            # Node.js
+            PACKAGE_JSON=$(find . -name package.json -print -quit)
+            if [ -n "$PACKAGE_JSON" ]; then
+              cd $(dirname "$PACKAGE_JSON")
+              npm install
+              npm run build
+              # Normalize output to ./dist
+              if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
+            elif [ -f "index.html" ]; then
+              # plain static site, just copy to ./dist
+              mkdir -p ./dist
+              cp -r ./* ./dist
+            else
+              echo "⚠️ Unknown project type; no build executed"
+            fi
+        cwd: ./site
+
+    # - id: build
+    #   name: Build Project
+    #   action: scaffolder:execute-shell-command
+    #   input:
+    #     workingDirectory: ./site
+    #     shell: bash
+    #     script: |
+    #       # Node.js
+    #       PACKAGE_JSON=$(find . -name package.json -print -quit)
+    #       if [ -n "$PACKAGE_JSON" ]; then
+    #         cd $(dirname "$PACKAGE_JSON")
+    #         npm install
+    #         npm run build
+    #         # Normalize output to ./dist
+    #         if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
+    #       elif [ -f "index.html" ]; then
+    #         # plain static site, just copy to ./dist
+    #         mkdir -p ./dist
+    #         cp -r ./* ./dist
+    #       else
+    #         echo "⚠️ Unknown project type; no build executed"
 
     - id: publish
       name: Publish to GitHub Pages
