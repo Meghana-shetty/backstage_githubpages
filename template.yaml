@@ -105,6 +105,13 @@ spec:
         url: ${{ parameters.Github_URL }}
         targetPath: ./site  # fetch code into ./site folder
 
+    - id: fetch
+      name: Fetch GitHub Repo
+      action: fetch:plain
+      input:
+        url: ${{ parameters.Github_URL }}
+        targetPath: ./site
+    
     - id: build
       name: Build Project
       action: shell:run
@@ -113,54 +120,41 @@ spec:
         args:
           - -c
           - |
-            # Node.js
-            PACKAGE_JSON=$(find . -name package.json -print -quit)
+            set -euo pipefail
+            echo "📁 Working directory: $(pwd)"
+            echo "🔍 Searching for project type..."
+    
+            PACKAGE_JSON=$(find . -name package.json -print -quit || true)
+    
             if [ -n "$PACKAGE_JSON" ]; then
-              cd $(dirname "$PACKAGE_JSON")
+              echo "📦 Node.js project detected: $PACKAGE_JSON"
+              cd "$(dirname "$PACKAGE_JSON")"
               npm install
-              npm run build
-              # Normalize output to ./dist
-              if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
+              npm run build || { echo "❌ npm build failed"; exit 1; }
+              if [ -d build ]; then
+                mv build ../dist
+              elif [ -d dist ]; then
+                mv dist ../dist
+              fi
+              echo "✅ Node.js build complete"
             elif [ -f "index.html" ]; then
-              # plain static site, just copy to ./dist
+              echo "🌐 Plain static site detected, copying to dist..."
               mkdir -p ./dist
               cp -r ./* ./dist
             else
-              echo "⚠️ Unknown project type; no build executed"
+              echo "⚠️ Unknown project type, skipping build"
             fi
         cwd: ./site
-
-    # - id: build
-    #   name: Build Project
-    #   action: scaffolder:execute-shell-command
-    #   input:
-    #     workingDirectory: ./site
-    #     shell: bash
-    #     script: |
-    #       # Node.js
-    #       PACKAGE_JSON=$(find . -name package.json -print -quit)
-    #       if [ -n "$PACKAGE_JSON" ]; then
-    #         cd $(dirname "$PACKAGE_JSON")
-    #         npm install
-    #         npm run build
-    #         # Normalize output to ./dist
-    #         if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
-    #       elif [ -f "index.html" ]; then
-    #         # plain static site, just copy to ./dist
-    #         mkdir -p ./dist
-    #         cp -r ./* ./dist
-    #       else
-    #         echo "⚠️ Unknown project type; no build executed"
-
+    
     - id: publish
       name: Publish to GitHub Pages
       action: publish:github
       input:
-        repoUrl: ${{ parameters.extraFields.Github }}  # GitHub repo URL
+        repoUrl: ${{ parameters.extraFields.Github }}
         defaultBranch: gh-pages
-        sourcePath: ./site/dist  # folder containing final static site
+        sourcePath: ./dist
         protectDefaultBranch: false
-
+    
     - id: enable-pages
       name: Enable GitHub Pages
       if: ${{ parameters.stack == 'Github pages' }}
@@ -172,8 +166,56 @@ spec:
         sourcePath: /
         token: ${{ parameters.extraFields.GithubToken }}
 
+#########below are previous code
+    # - id: build
+    #   name: Build Project
+    #   action: shell:run
+    #   input:
+    #     command: bash
+    #     args:
+    #       - -c
+    #       - |
+    #         # Node.js
+    #         PACKAGE_JSON=$(find . -name package.json -print -quit)
+    #         if [ -n "$PACKAGE_JSON" ]; then
+    #           cd $(dirname "$PACKAGE_JSON")
+    #           npm install
+    #           npm run build
+    #           # Normalize output to ./dist
+    #           if [ -d build ]; then mv build ../dist; elif [ -d dist ]; then mv dist ../dist; fi
+    #         elif [ -f "index.html" ]; then
+    #           # plain static site, just copy to ./dist
+    #           mkdir -p ./dist
+    #           cp -r ./* ./dist
+    #         else
+    #           echo "⚠️ Unknown project type; no build executed"
+    #         fi
+    #     cwd: ./site
+
+   
+
+    # - id: publish
+    #   name: Publish to GitHub Pages
+    #   action: publish:github
+    #   input:
+    #     repoUrl: ${{ parameters.extraFields.Github }}  # GitHub repo URL
+    #     defaultBranch: gh-pages
+    #     sourcePath: ./site/dist  # folder containing final static site
+    #     protectDefaultBranch: false
+
+    # - id: enable-pages
+    #   name: Enable GitHub Pages
+    #   if: ${{ parameters.stack == 'Github pages' }}
+    #   action: github:pages:enable
+    #   input:
+    #     repoUrl: ${{ parameters.extraFields.Github }}
+    #     buildType: workflow
+    #     sourceBranch: gh-pages
+    #     sourcePath: /
+    #     token: ${{ parameters.extraFields.GithubToken }}
 
 
+######till here############################################
     # - id: github-pages
     #   name: Enable GitHub Pages
     #   if: ${{ parameters.stack == 'Github pages' }}
