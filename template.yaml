@@ -181,15 +181,25 @@ spec:
     #           echo "⚠️ Unknown project type, skipping build"
     #         fi
     #     cwd: ./site
-    
     - id: publish
       name: Publish to GitHub Pages
       action: publish:github
       input:
-        repoUrl: ${{ parameters.extraFields.Github }}
+        repoUrl: ${{ parameters.extraFields.Github }}   # must be full HTTPS URL
         defaultBranch: gh-pages
-        sourcePath: ./dist
+        sourcePath: ./site/dist
         protectDefaultBranch: false
+        createBranch: true   # if your Backstage version supports it
+
+
+    # - id: publish
+    #   name: Publish to GitHub Pages
+    #   action: publish:github
+    #   input:
+    #     repoUrl: ${{ parameters.extraFields.Github }}
+    #     defaultBranch: gh-pages
+    #     sourcePath: ./dist
+    #     protectDefaultBranch: false
     
     - id: enable-pages
       name: Enable GitHub Pages
