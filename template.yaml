@@ -185,7 +185,7 @@ spec:
       name: Publish to GitHub Pages
       action: publish:github
       input:
-        repoUrl: ${{ parameters.extraFields.Github }}   # must be full HTTPS URL
+        repoUrl: github.com?owner=Meghana-shetty&repo=cafe-static-website     #${{ parameters.extraFields.Github }}   # must be full HTTPS URL
         defaultBranch: gh-pages
         sourcePath: ./site/dist
         protectDefaultBranch: false
