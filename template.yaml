@@ -123,23 +123,14 @@ spec:
             set -e
             echo "🌐 Static site detected"
             echo "📍 Working directory: $(pwd)"
-            echo "📂 Files present before copy:"
-            ls -la || echo "⚠️ Could not list files"
+            echo "📂 Files present:"
+            ls -la
     
-            if [ ! -f "index.html" ]; then
-              echo "❌ No index.html found in $(pwd)"
-              echo "Make sure your GitHub repo has an index.html file at the root."
-              exit 1
-            fi
-    
-            echo "📦 Creating ./dist folder"
             mkdir -p ./dist
-    
-            echo "📋 Copying static files..."
-            cp -r ./* ./dist/ || echo "⚠️ Some files may not have copied"
-    
-            echo "✅ Static files copied to ./dist successfully!"
+            cp -r ./* ./dist/
+            echo "✅ Static files copied to ./dist"
         cwd: ./site
+
 
     
     # - id: build
