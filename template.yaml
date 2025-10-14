@@ -195,11 +195,12 @@ spec:
             git init
             git config user.email "backstage@automation.local"
             git config user.name "Backstage Bot"
-            git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/Meghana-shetty/cafe-static-website.git
+            git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/cafe-static-website.git
             git checkout -b gh-pages || git checkout gh-pages
             git add .
             git commit -m "Deploy from Backstage Template"
             git push --force origin gh-pages
+
 ####before above code, below publish was there
     # - id: publish
     #   name: Publish to GitHub Pages
