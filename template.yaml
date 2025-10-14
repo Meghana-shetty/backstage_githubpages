@@ -189,7 +189,7 @@ spec:
         defaultBranch: gh-pages
         sourcePath: ./site/dist
         protectDefaultBranch: false
-        createBranch: true   # if your Backstage version supports it
+        #createBranch: true   # if your Backstage version supports it
 
 
     # - id: publish
