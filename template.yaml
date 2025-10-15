@@ -214,37 +214,20 @@ spec:
             git commit -m "Deploy from Backstage Template"
             git push --force origin gh-pages
 
-####before above code, below publish was there
-    # - id: publish
-    #   name: Publish to GitHub Pages
-    #   action: publish:github:pages #publish:github
-    #   input:
-    #     repoUrl: github.com?owner=Meghana-shetty&repo=cafe-static-website     #${{ parameters.extraFields.Github }}   # must be full HTTPS URL
-    #     defaultBranch: gh-pages
-    #     sourcePath: ./site/dist
-    #     protectDefaultBranch: false
-        #createBranch: true   # if your Backstage version supports it
-
-
-    # - id: publish
-    #   name: Publish to GitHub Pages
-    #   action: publish:github
+#########this is commented on 10-15-2025 at 11am to skip enable github pages
+    
+    # - id: enable-pages
+    #   name: Enable GitHub Pages
+    #   if: ${{ parameters.stack == 'Github pages' }}
+    #   action: github:pages:enable
     #   input:
     #     repoUrl: ${{ parameters.extraFields.Github }}
-    #     defaultBranch: gh-pages
-    #     sourcePath: ./dist
-    #     protectDefaultBranch: false
-    
-    - id: enable-pages
-      name: Enable GitHub Pages
-      if: ${{ parameters.stack == 'Github pages' }}
-      action: github:pages:enable
-      input:
-        repoUrl: ${{ parameters.extraFields.Github }}
-        buildType: workflow
-        sourceBranch: gh-pages
-        sourcePath: /
-        token: ${{ parameters.extraFields.GithubToken }}
+    #     buildType: workflow
+    #     sourceBranch: gh-pages
+    #     sourcePath: /
+    #     token: ${{ parameters.extraFields.GithubToken }}
+
+##########commented on 10-15-2025 at 11am
 
 #########below are previous code
     # - id: build
