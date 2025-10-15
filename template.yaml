@@ -207,7 +207,6 @@ spec:
             git init
             git config user.email "backstage@automation.local"
             git config user.name "Backstage Bot"
-            # git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/CafeStaticWebsite.git
             git remote add origin "$AUTH_URL"
             git checkout -b gh-pages || git checkout gh-pages
             git add .
@@ -215,7 +214,7 @@ spec:
             git push --force origin gh-pages
 
 #########this is commented on 10-15-2025 at 11am to skip enable github pages
-    
+    # git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/CafeStaticWebsite.git
     # - id: enable-pages
     #   name: Enable GitHub Pages
     #   if: ${{ parameters.stack == 'Github pages' }}
