@@ -195,7 +195,7 @@ spec:
             git init
             git config user.email "backstage@automation.local"
             git config user.name "Backstage Bot"
-            git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/cafe-static-website.git
+            git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/CafeStaticWebsite.git
             git checkout -b gh-pages || git checkout gh-pages
             git add .
             git commit -m "Deploy from Backstage Template"
