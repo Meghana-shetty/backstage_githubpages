@@ -114,7 +114,7 @@ spec:
 
     - id: build
       name: Prepare Static Site
-      ${{ parameters.stack == 'Github pages' }}
+      if: ${{ parameters.stack == 'Github pages' }}
       action: shell:run
       input:
         command: bash
@@ -185,7 +185,7 @@ spec:
 
     - id: publish
       name: Deploy Static Site to GitHub Pages
-      ${{ parameters.stack == 'Github pages' }}
+      if: ${{ parameters.stack == 'Github pages' }}
       action: shell:run
       input:
         command: bash
@@ -408,7 +408,7 @@ spec:
     links:
       - title: "View on GitHub Pages"
         #if: "${{ parameters.deploy_method == 'github pages' }}"
-        if: ${{ parameters.stack == 'Github pages' }}
+        # if: "${{ parameters.stack == 'Github pages' }}"
         url: "https://${{ parameters.Github_URL | replace('https://github.com/', '') | replace('.git', '') | replace('/', '.github.io/') }}/"
         #url: ${{ steps.github-pages.output.pageUrl }}
         icon: "website"
