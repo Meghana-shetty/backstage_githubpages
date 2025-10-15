@@ -114,6 +114,7 @@ spec:
 
     - id: build
       name: Prepare Static Site
+      ${{ parameters.stack == 'Github pages' }}
       action: shell:run
       input:
         command: bash
@@ -184,6 +185,7 @@ spec:
 
     - id: publish
       name: Deploy Static Site to GitHub Pages
+      ${{ parameters.stack == 'Github pages' }}
       action: shell:run
       input:
         command: bash
@@ -205,7 +207,7 @@ spec:
             git init
             git config user.email "backstage@automation.local"
             git config user.name "Backstage Bot"
-            #git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/CafeStaticWebsite.git
+            # git remote add origin https://x-access-token:${{ parameters.extraFields.GithubToken }}@github.com/Meghana-shetty/CafeStaticWebsite.git
             git remote add origin "$AUTH_URL"
             git checkout -b gh-pages || git checkout gh-pages
             git add .
@@ -419,3 +421,11 @@ spec:
   #     - title: "Open Website"
   #       #url: "http://localhost:89"
   #       icon: "website"
+  output:
+    links:
+      - title: "View on GitHub Pages"
+        #if: "${{ parameters.deploy_method == 'github pages' }}"
+        if: ${{ parameters.stack == 'Github pages' }}
+        url: "https://${{ parameters.Github_URL | replace('https://github.com/', '') | replace('.git', '') | replace('/', '.github.io/') }}/"
+        #url: ${{ steps.github-pages.output.pageUrl }}
+        icon: "website"
